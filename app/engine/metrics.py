@@ -27,15 +27,34 @@ def calculate_assignment_skill_fit(
         student: The student under evaluation.
         project: The project under evaluation.
 
+    The score is the average, over all of the project's requirements, of how
+    much of the required level the student reaches:
+
+        fit = mean over requirements k of min(1, student_level_k / required_k)
+
+    A requirement is unmet when the student's level is below the required
+    level. A project without requirements is a neutral, perfect fit (1.0).
+
+    Args:
+        student: The student under evaluation.
+        project: The project under evaluation.
+
     Returns:
         A tuple of (skill_fit_score [0.0, 1.0], list_of_unmet_skill_ids).
-
-    Raises:
-        NotImplementedError: To be implemented by Team B.
     """
-    raise NotImplementedError(
-        "TODO (Team B): Implement calculate_assignment_skill_fit"
-    )
+    if not project.requirements:
+        return 1.0, []
+
+    total = 0.0
+    unmet: list[str] = []
+    for req in project.requirements:
+        level = student.get_skill_level(req.skill_id)
+        required = max(req.minimum_level, 1)
+        total += min(1.0, level / required)
+        if level < required:
+            unmet.append(req.skill_id)
+
+    return round(total / len(project.requirements), 4), unmet
 
 
 def calculate_gini(values: list[float]) -> float:
