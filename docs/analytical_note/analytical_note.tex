@@ -31,8 +31,8 @@
 TECH5 Programming and Application Design, NHH Norwegian School of Economics\\[8pt]
 \begin{tabular}{ll}
 \textbf{Group:} & 15\\
-\textbf{Team B (Assignment Engine):} & Derek Liang, Aayush [surname], Ole Theodor [surname]\\
-\textbf{Team A (Visualization):} & [names]\\
+\textbf{Team B (Assignment Engine):} & Derek Liang, Aayush M. Kolhe, Ole Theodor [surname]\\
+\textbf{Team A (Visualization):} & Wilhelm Leikanger, Alexander Bangsund, Henrik Wassiluk\\
 \textbf{Date:} & [submission date]
 \end{tabular}
 \end{center}
@@ -627,6 +627,14 @@ combinations of constraints, is proven by the solver.
         cuts guarantee that alternatives differ, not that they are
         Pareto-optimal. Dominated alternatives are flagged
         (Table~\ref{tab:std}) but still generated.
+  \item \textbf{Runs are tied to the current cohort.} Stored assignments
+        reference students and projects with \code{ON DELETE CASCADE}.
+        Loading a demo scenario therefore deletes all earlier runs, so they
+        are not left with indicators but no allocations. Deleting a single
+        student or project by hand still removes that student's or
+        project's rows from earlier solutions. Keeping a full history across
+        cohorts would require storing a snapshot of the input with each run,
+        which changes the shared schema.
   \item \textbf{Static, self-reported data.} The model assumes the input data
         are correct and fixed. Self-reported skill levels may be inaccurate,
         and mid-semester changes require a new run.
