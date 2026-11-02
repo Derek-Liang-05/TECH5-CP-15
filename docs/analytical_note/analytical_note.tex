@@ -31,9 +31,9 @@
 TECH5 Programming and Application Design, NHH Norwegian School of Economics\\[8pt]
 \begin{tabular}{ll}
 \textbf{Group:} & 15\\
-\textbf{Team B (Assignment Engine):} & Derek Liang, Aayush M. Kolhe, Ole Theodor [surname]\\
+\textbf{Team B (Engine):} & Derek Liang, Aayush Mohan Kolhe, Ole Theodor Åmlid\\
 \textbf{Team A (Visualization):} & Wilhelm Leikanger, Alexander Bangsund, Henrik Wassiluk\\
-\textbf{Date:} & [submission date]
+\textbf{Date:} & 2 November 2026
 \end{tabular}
 \end{center}
 
@@ -539,10 +539,17 @@ tells the decision-maker that the priorities do not conflict for this cohort.
         than any ranked project, and are counted in $U$.
   \item \textbf{Ranks are evenly spaced}: the step from first to second
         choice weighs the same as from second to third.
-  \item \textbf{Skill levels} are taken at face value; missing skills count
-        as level 0. A project with no requirements has fit 1.
+  \item \textbf{Skill levels} are whole numbers from 1 to 5, for students
+        and requirements alike; other values are rejected. A skill missing
+        from a profile counts as level 0. A project with no requirements has
+        fit 1.
+  \item \textbf{Preferences}: each student is expected to rank at least
+        three projects, each with a distinct rank. Fewer gives a warning,
+        not an error.
   \item \textbf{Mandatory skills} are met at team level (at least one
-        qualified member), pending the instructor's confirmation.
+        qualified member). This is our documented interpretation of the
+        brief; the stricter reading would set $x_{sp} = 0$ for every
+        unqualified student, a one-line change in the model.
   \item \textbf{Ties} between students with identical preferences are broken
         by the secondary goal ($\varepsilon$ term) and then by the solver; the
         result is a valid optimum, not a judgement about which student
@@ -568,8 +575,12 @@ Empty cohort or catalogue; duplicate or unknown identifiers; invalid
   & Reject & Named validation error; the solver is not run.\\
 Contradictory fixed assignments (one student fixed twice)
   & Reject & Named validation error.\\
-Incomplete, duplicate or tied preferences; no preferences
+Fewer than three ranked projects, or none
   & Warn & Run proceeds; unranked projects cost $m+1$.\\
+Tied ranks (one rank used twice); the same project ranked twice
+  & Reject & \code{INVALID\_INPUT}; the ranking is ambiguous.\\
+Skill or requirement level outside 1--5
+  & Reject & \code{INVALID\_INPUT}, naming the student or project.\\
 Uncatalogued skill in a profile or requirement
   & Warn & Run proceeds; the skill counts only where defined.\\
 Missing skills; project without requirements
@@ -589,7 +600,8 @@ Duplicate alternatives
 Equal aggregate scores
   & Accept & Tie-break term; in recommendations the lowest alternative number wins.\\
 Solver time limit (15\,s) or database failure
-  & Fail & Run status \code{NOT\_SOLVED}/\code{FAILED} with diagnostics.\\
+  & Fail & Run status \code{FAILED}; the solver status (e.g.\
+    \code{NOT\_SOLVED}) is kept in the diagnostics.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -601,7 +613,10 @@ mandatory level is held by no student in the cohort. Validation detects these
 directly. Validation is deliberately conservative: it treats the last case as
 infeasible even when the project has $l_p = 0$ and could stay empty under
 constraint~\eqref{eq:mand}. All other infeasibility, which arises from
-combinations of constraints, is proven by the solver.
+combinations of constraints, is proven by the solver. Data errors are
+reported before infeasibility: an empty cohort, for example, also violates
+$\sum_p l_p \le n$, but the run is \code{INVALID\_INPUT}, because the input
+must be corrected before feasibility means anything.
 
 \section{Limitations}
 
