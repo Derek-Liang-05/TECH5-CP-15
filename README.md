@@ -27,8 +27,9 @@ TECH5Project/
 │   │   ├── models.py         # Student, Project, Skill, Preference, Run, Solution
 │   │   └── validation.py     # Cohort validation & feasibility pre-checks
 │   ├── engine/               # Component B: Assignment Engine (Team B Tasks)
-│   │   ├── solvers.py        # Optimization engine & strategy skeletons [TODO: Team B]
-│   │   └── metrics.py        # Analytical indicators & fairness metrics [TODO: Team B]
+│   │   ├── solvers.py        # ILP engine (Pyomo + HiGHS), three strategies, alternatives
+│   │   ├── metrics.py        # Analytical indicators & fairness metrics
+│   │   └── recommendations.py# Transparent recommendations per policy priority
 │   ├── persistence/          # Shared relational persistence layer
 │   │   ├── database.py       # Thread-safe SQLite database manager (WAL mode)
 │   │   ├── repositories.py   # Student, Project, Skill, Run repositories
@@ -47,7 +48,7 @@ TECH5Project/
 │   ├── reproducible_demonstration.md # Demonstration walkthrough script
 │   ├── team_reflection_and_rubric.md # Collaboration reflection & rubric guide
 │   └── testing_and_quality.md        # Test matrix & edge case documentation
-├── tests/                    # Automated test suite (46 pytest tests)
+├── tests/                    # Automated test suite (97 pytest tests)
 ├── requirements.txt          # Python dependencies
 └── run.py                    # Application launch entry point
 ```
@@ -87,8 +88,8 @@ The project is designed for two collaborating student development teams:
 ### 3.2 Setup Virtual Environment
 ```powershell
 # 1. Clone repository & enter workspace
-git clone <repository-url>
-cd TECH5Project
+git clone https://github.com/WilhelmLeikanger/TECH5-collaborative-Project.git
+cd TECH5-collaborative-Project
 
 # 2. Create and activate virtual environment
 python -m venv .venv
@@ -104,34 +105,39 @@ python run.py
 
 Navigate to **`http://127.0.0.1:5000`** in your browser.
 
-> [!TIP]
-> **Mock Fallback:** When `app/engine/solvers.py` raises `NotImplementedError`, the web application automatically falls back to `MockAssignmentEngine` with an informative banner. This allows Team A to test all interactive features end-to-end at all times.
+> [!IMPORTANT]
+> Step 3 is required: the engine imports `pyomo` and uses the HiGHS solver
+> (`highspy`). In an environment without them, every test that touches the
+> engine fails at collection with `ModuleNotFoundError: No module named 'pyomo'`.
+> No solver licence or separate install is needed; `pip` installs everything.
+
+For a step-by-step walkthrough of the four demo scenarios, see
+[`docs/reproducible_demonstration.md`](docs/reproducible_demonstration.md).
 
 ---
 
 ## 4. Automated Testing & Verification
-
-The repository contains **50 automated tests** structured to guide development for both teams:
 
 ```powershell
 # Run the complete test suite
 .\.venv\Scripts\pytest -v
 ```
 
-### Understanding Test Results in the Starter Carcass:
-When you run pytest on the starter carcass, you will see:
-- **35 tests PASS**: Verifies domain models, 3NF database persistence, cohort validation, contract compliance, mock engine substitutability, dashboard, student/lock workflows, and scenario runners.
-- **15 tests XFAIL (Expected Failures)**:
-  - **Team A Tasks (3 xfails)** in `tests/test_visualization_component.py`:
-    - `test_skills_crud_workflow`: Skill creation and catalog management.
-    - `test_projects_crud_workflow`: Project creation and requirement matrix parsing.
-    - `test_compare_solutions_view`: Side-by-side solution comparison controller.
-  - **Team B Tasks (12 xfails)**:
-    - 4 metrics tests in `tests/test_metrics.py` (Gini coefficient, skill fit, solution indicators, comparison).
-    - 1 alternative generation test in `tests/test_solvers.py`.
-    - 7 solver-dependent edge cases in `tests/test_edge_cases.py` (cases 1, 2, 3, 4, 13, 14, 15).
+Expected result on `main`: **97 passed, 0 failed, 0 expected failures**.
+All tests in the starter kit that were marked as expected failures now pass,
+and none are skipped.
 
-**Goal for Students:** As Team A implements the project/skill forms and comparison views, and Team B implements the solver and metrics, these 15 tests will cleanly transition to passing (`XPASS` / `PASSED`).
+| Test file | Tests | What it checks |
+|---|---|---|
+| `test_solvers.py`, `test_assignment_strategies.py` | 22 | Hard constraints, each strategy's objective, distinct alternatives |
+| `test_engine_run.py`, `test_contract_and_engine.py` | 23 | `execute_run`, run statuses, contract methods |
+| `test_metrics.py` | 4 | Skill fit, Gini, indicators, comparison |
+| `test_edge_cases.py`, `test_validation.py` | 21 | Infeasible input, ties, invalid skill levels, conflicting locks |
+| `test_engine_output_contract.py` | 5 | Every field and indicator key the UI reads is present |
+| `test_component_integration.py` | 3 | Full workflow through the UI with the real engine, data survives an app restart |
+| `test_milestone_end_to_end.py` | 1 | Every milestone item in order, starting from data typed into the forms |
+| `test_visualization_component.py` | 11 | Pages, compare view, fairness section, recommendations |
+| `test_models.py`, `test_persistence.py` | 7 | Domain models and SQLite repositories |
 
 ---
 
