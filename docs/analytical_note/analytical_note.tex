@@ -336,6 +336,39 @@ distributed:
         reported as a supporting measure.
 \end{enumerate}
 
+\paragraph{How the interface presents fairness.}
+The brief asks that the application should not simply display these numbers
+but help the user understand what they imply. On the solution page, the four
+indicators above are therefore shown twice: once as plain figures in the
+summary cards, and once in a fairness section further down that says which
+students are behind the numbers.
+\begin{itemize}
+  \item The rank distribution $c_k$ is drawn as a horizontal bar per rank,
+        from first choice down to ``not ranked'', so the spread can be seen
+        without reading the numbers. A tall first bar and no red bar is the ideal.
+  \item The $U$ students assigned outside their preferences are listed by
+        name, with the project they received and the projects they had
+        ranked. A count alone does not tell the coordinator who to talk to.
+  \item The worst individual outcome $r_{\max}$ is shown as the student (or
+        students, if several tie) who received it, together with their first
+        choice. If anyone is unranked, that group is treated as the worst
+        case regardless of $r_{\max}$.
+  \item The Gini coefficient is given with a colour scale and one of four
+        readings: \emph{very even} ($G < 0.10$), \emph{fairly even}
+        ($0.10 \le G < 0.25$), \emph{uneven} ($0.25 \le G < 0.40$) and
+        \emph{very uneven} ($G \ge 0.40$). The thresholds are our own
+        judgement, chosen so that the demo cohorts land where we felt they
+        should: $G = 0.08$ with one student on a second choice reads as
+        ``very even'', and the four-student example in
+        Section~\ref{sec:tradeoff} with $G = 0.32$ reads as ``uneven''. The
+        bands are a reading aid, not a standard, and the exact value is
+        always shown next to them.
+\end{itemize}
+Above the section, one sentence sums up the solution, for example
+``9 of 10 students received their first or second choice. The least
+satisfied student received their 3rd choice.'' It is built from $c_1 + c_2$,
+$U$ and $r_{\max}$, and names the unranked students when there are any.
+
 \subsection{Capacity utilisation}
 \begin{equation*}
   \text{Util}_p = \frac{\sum_{s} x_{sp}}{u_p} \times 100\%,
@@ -346,6 +379,7 @@ Projects at their minimum or maximum are flagged, since they leave no slack
 when the situation changes.
 
 \section{Trade-off analysis and solution comparison}
+\label{sec:tradeoff}
 
 \subsection{Comparative deltas}
 For a baseline solution $A$ and an alternative $B$, each indicator is reported
@@ -379,6 +413,38 @@ distinctness, so a later alternative can be dominated. Dominated alternatives
 are therefore flagged: the engine adds a warning and the numbers of the
 dominating alternatives (\code{diagnostics["dominated\_by"]}) to the
 solution, and the comparison summary states that there is no real trade-off.
+
+\subsection{How the interface presents trade-offs}
+Two pages show these quantities to the user.
+
+\paragraph{Compare page.} The user picks any two solutions, grouped by run,
+and sees the deltas of Section~4.1 side by side, the counts of students
+whose rank improved and worsened, and a table of every changed assignment
+with the student's name, both projects and the rank change. Runs without
+solutions are left out of the selection, so an infeasible run cannot be
+chosen by mistake.
+
+\paragraph{Recommendations page.} For each policy priority the page shows
+the recommended alternative, the criteria and evidence from Section~5, and
+then answers the brief's three questions against every other
+non-dominated alternative:
+\begin{itemize}
+  \item \textbf{What improves and what gets worse} is written out in words
+        from the deltas of five indicators: mean skill fit, mean rank,
+        worst rank, students outside their preferences and unmet desired
+        requirements. Only indicators that actually change are listed, and
+        if none change the page says so.
+  \item \textbf{Who is affected} is a table of the students who move,
+        each with a before-and-after label such as ``1st choice $\to$ 3rd
+        choice'' and a count of how many are better and worse off.
+  \item \textbf{Dominated alternatives} are excluded from these
+        comparisons, because comparing against an option that is worse on
+        every count would be misleading. Instead a banner states which
+        alternative is dominated, by which, and why.
+\end{itemize}
+When a run has exactly one feasible solution, all three priorities would
+pick it, so the page shows one recommendation rather than three identical
+ones.
 
 \subsection{Illustrative results}
 
@@ -442,31 +508,23 @@ policy priority separately. Each recommendation lists the criteria used, the
 calculated evidence (indicator values) and the advice, so that calculated
 facts are kept apart from normative judgement.
 
-\begin{table}[!htbp]
-\centering
-\small
-\caption{Recommendation rules. Criteria are applied lexicographically: the
-         second criterion only decides between alternatives tied on the
-         first.}
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.1cm}LL}
-\toprule
-Policy priority & Selection criterion (lexicographic) & Advice and trade-off warning\\
-\midrule
-1. Student preference maximisation
-  & minimise $U$, then $\bar r$, then $r_{\max}$
-  & Adopt when satisfaction and few appeals matter most; may give projects
-    weaker skill coverage.\\
-2. Project skill quality and delivery
-  & maximise $\bar\sigma$, then minimise $U_{\text{soft}}$
-  & Adopt when partners demand strong technical capability; some students
-    receive lower-ranked projects.\\
-3. Balanced and egalitarian
-  & minimise $G$, then rank variance, then $\bar r$
-  & Adopt to avoid concentrating disappointment on a few students; may
-    lower average satisfaction.\\
-\bottomrule
-\end{tabularx}
-\end{table}
+Criteria are applied lexicographically: the second criterion only decides
+between alternatives tied on the first.
+
+\subsection{Policy priority 1: student preference maximisation}
+\emph{Criterion:} minimise $U$, then $\bar r$, then $r_{\max}$.
+\emph{Advice:} adopt when student satisfaction and few appeals matter most.
+\emph{Trade-off warning:} projects may get weaker skill coverage.
+
+\subsection{Policy priority 2: project delivery and technical competence}
+\emph{Criterion:} maximise $\bar\sigma$, then minimise $U_{\text{soft}}$.
+\emph{Advice:} adopt when partners demand strong technical capability.
+\emph{Trade-off warning:} some students receive lower-ranked projects.
+
+\subsection{Policy priority 3: balanced and egalitarian compromise}
+\emph{Criterion:} minimise $G$, then rank variance, then $\bar r$.
+\emph{Advice:} adopt to avoid concentrating disappointment on a few students.
+\emph{Trade-off warning:} average satisfaction may be lower.
 
 When several alternatives tie on all criteria, the one with the lowest
 alternative number is recommended. The same alternative can be recommended
@@ -572,6 +630,22 @@ combinations of constraints, is proven by the solver.
   \item \textbf{Static, self-reported data.} The model assumes the input data
         are correct and fixed. Self-reported skill levels may be inaccurate,
         and mid-semester changes require a new run.
+  \item \textbf{Plain-language readings are judgements.} The four Gini
+        bands and the one-sentence headline on the solution page compress
+        the indicators into words. The thresholds were set by eye on the
+        demo cohorts, and a headline that counts first and second choices
+        says nothing about third choices. Both are meant to orient the
+        reader, who still has to look at the figures and the named students
+        below them.
+  \item \textbf{What-if analysis is limited to locks.} The only way to
+        explore a change from the results pages is ``lock and rerun'', which
+        fixes one student and solves again. There is no way to try a
+        temporary change, compare it, and discard it; every experiment
+        becomes a saved fixed assignment that must be removed by hand
+        afterwards. On the data-entry side, a form that fails validation is
+        returned empty, so the user retypes everything. These are usability
+        gaps rather than analytical ones, but they slow down exactly the
+        iterative use the brief describes.
 \end{enumerate}
 
 \begin{thebibliography}{9}
