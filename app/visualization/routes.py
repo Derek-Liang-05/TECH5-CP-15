@@ -749,6 +749,7 @@ def load_scenario(scenario_name: str) -> flask.Response:
     """Populates database with a designated reproducible benchmark cohort."""
     repo_run = repositories.RunRepository()
     repo_run.clear_all_cohort_data()
+    repo_run.clear_all_current_solutions()
 
     if scenario_name == "standard":
         data = demo_data.get_standard_scenario()

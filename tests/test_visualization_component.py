@@ -124,6 +124,28 @@ def test_scenario_loading_and_optimization_trigger(
     assert b"Policy Advice" in recs_res.data
 
 
+def test_scenario_reload_clears_runs(tmp_path: pathlib.Path) -> None:
+    """Verifies loading a scenario removes runs from the previous data."""
+    db_file = tmp_path / "test_scenario_reload.db"
+    app = create_app({"TESTING": True, "DATABASE_PATH": db_file})
+    client = app.test_client()
+
+    client.post("/load-scenario/fixed", follow_redirects=True)
+    client.post(
+        "/runs/trigger",
+        data={"primary_strategy": "PREFERENCE", "max_alternatives": 1},
+        follow_redirects=True,
+    )
+    with app.app_context():
+        assert len(repositories.RunRepository().list_runs()) == 1
+
+    # Reloading deletes students and projects, which cascades to the
+    # run's assignments, so the old run must be removed as well.
+    client.post("/load-scenario/fixed", follow_redirects=True)
+    with app.app_context():
+        assert repositories.RunRepository().list_runs() == []
+
+
 def test_create_student_preference_validation(
     tmp_path: pathlib.Path,
 ) -> None:
