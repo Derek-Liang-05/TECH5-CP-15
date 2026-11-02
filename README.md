@@ -48,7 +48,7 @@ TECH5Project/
 │   ├── reproducible_demonstration.md # Demonstration walkthrough script
 │   ├── team_reflection_and_rubric.md # Collaboration reflection & rubric guide
 │   └── testing_and_quality.md        # Test matrix & edge case documentation
-├── tests/                    # Automated test suite (97 pytest tests)
+├── tests/                    # Automated test suite (98 pytest tests)
 ├── requirements.txt          # Python dependencies
 └── run.py                    # Application launch entry point
 ```
@@ -123,7 +123,7 @@ For a step-by-step walkthrough of the four demo scenarios, see
 .\.venv\Scripts\pytest -v
 ```
 
-Expected result on `main`: **97 passed, 0 failed, 0 expected failures**.
+Expected result on `main`: **98 passed, 0 failed, 0 expected failures**.
 All tests in the starter kit that were marked as expected failures now pass,
 and none are skipped.
 
@@ -136,7 +136,7 @@ and none are skipped.
 | `test_engine_output_contract.py` | 5 | Every field and indicator key the UI reads is present |
 | `test_component_integration.py` | 3 | Full workflow through the UI with the real engine, data survives an app restart |
 | `test_milestone_end_to_end.py` | 1 | Every milestone item in order, starting from data typed into the forms |
-| `test_visualization_component.py` | 11 | Pages, compare view, fairness section, recommendations |
+| `test_visualization_component.py` | 12 | Pages, compare view, fairness section, recommendations, scenario reload |
 | `test_models.py`, `test_persistence.py` | 7 | Domain models and SQLite repositories |
 
 ---
